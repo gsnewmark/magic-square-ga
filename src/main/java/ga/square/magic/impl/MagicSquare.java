@@ -16,7 +16,7 @@ public class MagicSquare implements Individual<Integer> {
         checkArgument(size > 0, "Size of square should be positive");
         this.size = size;
 
-        chromosome = new ArrayList<Integer>(this.size * this.size);
+        chromosome = new ArrayList<>(this.size * this.size);
         for (int i = 1; i <= this.size * this.size; ++i) {
             chromosome.add(i);
         }

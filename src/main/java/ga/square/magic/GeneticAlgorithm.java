@@ -1,8 +1,8 @@
 package ga.square.magic;
 
-import java.util.Set;
-
 public interface GeneticAlgorithm<I extends Individual> {
-    Set<I> produceNextGeneration(Set<I> population);
+    I randomIndividual();
     double fitnessOf(I individual);
+    I mutate(I individual);
+    I crossover(I father, I mother);
 }
