@@ -8,12 +8,13 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class MagicSquareSolver implements Solver<MagicSquare, MagicSquareGA> {
+public class MagicSquareSolver
+        implements Solver<MagicSquare, MagicSquareGAOXCrossoverSwapMutation> {
     public MagicSquareSolver() {}
 
     @Override
     public MagicSquare solve(
-            final MagicSquareGA algorithm,
+            final MagicSquareGAOXCrossoverSwapMutation algorithm,
             final SolverConfiguration configuration,
             final Set<MagicSquare> initialPopulation) {
         // TODO
