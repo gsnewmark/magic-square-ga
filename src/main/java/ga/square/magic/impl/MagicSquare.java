@@ -49,7 +49,7 @@ public class MagicSquare implements Individual<Integer> {
         checkArgument(x >= 0, "Cell x index should be non-negative");
         checkArgument(x < size, "Cell x index should be smaller than size" );
         checkArgument(y >= 0, "Cell y index should be non-negative");
-        checkArgument(y < size, "Cell y index should be smaller than size" );
+        checkArgument(y < size, "Cell y index should be smaller than size");
 
         return chromosome.get(y * size + x);
     }
@@ -68,5 +68,25 @@ public class MagicSquare implements Individual<Integer> {
         sb.append("}");
 
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final MagicSquare that = (MagicSquare) o;
+
+        if (size != that.size) return false;
+        if (!chromosome.equals(that.chromosome)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = chromosome.hashCode();
+        result = 31 * result + size;
+        return result;
     }
 }

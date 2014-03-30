@@ -1,14 +1,30 @@
 package ga.square.magic.impl;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import ga.square.magic.GeneticAlgorithm;
 import org.apache.commons.lang3.RandomUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-public class MagicSquareGAOXCrossoverSwapMutation
+public class MagicSquareGAOXCrossoverSwapMutationPanmixiaSelection
         implements GeneticAlgorithm<MagicSquare> {
+    @Override
+    public MagicSquare randomIndividual(final int sideSize) {
+        final ArrayList<Integer> chromosome =
+                new ArrayList<>(sideSize * sideSize);
+        for (int i = 1; i <= sideSize * sideSize; i++) {
+            chromosome.add(i);
+        }
+        Collections.shuffle(chromosome);
+
+        return new MagicSquare(chromosome);
+    }
+
     /**
      * Sum of squared differences of magic sum of square and each column, row,
      * diagonal.
@@ -77,15 +93,66 @@ public class MagicSquareGAOXCrossoverSwapMutation
     }
 
     @Override
-    public MagicSquare randomIndividual(final int sideSize) {
-        final ArrayList<Integer> chromosome =
-                new ArrayList<>(sideSize * sideSize);
-        for (int i = 1; i <= sideSize * sideSize; i++) {
-            chromosome.add(i);
-        }
-        Collections.shuffle(chromosome);
+    public List<ImmutablePair<MagicSquare, MagicSquare>> selectParents(
+            final Multimap<Integer, MagicSquare> population) {
+        checkArgument(population != null, "Illegal argument population: null");
+        checkArgument(
+                population.size() > 1,
+                "Population should contain more than one individual");
 
-        return new MagicSquare(chromosome);
+        final List<MagicSquare> possibleParents =
+                new ArrayList<>(population.values());
+        Collections.shuffle(possibleParents);
+
+        final Pair<Integer, Integer> indices =
+                randomDifferentIndices(possibleParents.size());
+
+        return Arrays.asList(
+                new ImmutablePair<>(
+                        possibleParents.get(indices.getLeft()),
+                        possibleParents.get(indices.getRight())));
+    }
+
+    private Pair<Integer, Integer> randomDifferentIndices(final int max) {
+        final int i = RandomUtils.nextInt(0, max);
+        int j = RandomUtils.nextInt(0, max);
+        while (j == i) {
+            j = RandomUtils.nextInt(0, max);
+        }
+        return new ImmutablePair<>(i, j);
+    }
+
+    @Override
+    public Multimap<Integer, MagicSquare> selectForRemoval(
+            final int n,
+            final Multimap<Integer, MagicSquare> population) {
+        checkArgument(
+                n <= population.size(),
+                "Can't remove more individuals than population contains.");
+        checkArgument(population != null, "Illegal argument population: null");
+        checkArgument(
+                population.size() > 1,
+                "Population should contain more than one individual");
+
+        final List<Integer> fitnessValues = new ArrayList<>(population.keySet());
+        Collections.sort(fitnessValues);
+        Collections.reverse(fitnessValues);
+        final Multimap<Integer, MagicSquare> result = ArrayListMultimap.create();
+
+        while (result.size() != n && !fitnessValues.isEmpty()) {
+            final Stack<MagicSquare> candidates = new Stack<>();
+            for (final MagicSquare ms : population.get(fitnessValues.get(0))) {
+                candidates.push(ms);
+            }
+
+            while (!candidates.isEmpty() && result.size() != n) {
+                result.put(fitnessValues.get(0), candidates.pop());
+            }
+
+            fitnessValues.remove(0);
+        }
+
+        return result;
     }
 
     /**
@@ -98,17 +165,14 @@ public class MagicSquareGAOXCrossoverSwapMutation
         final List<Integer> chromosome =
                 new ArrayList<>(individual.chromosome());
 
-        final int i = RandomUtils.nextInt(0, chromosome.size());
-        int j = RandomUtils.nextInt(0, chromosome.size());
-        while (j == i) {
-            j = RandomUtils.nextInt(0, chromosome.size());
-        }
+        final Pair<Integer, Integer> indices =
+                randomDifferentIndices(chromosome.size());
 
-        final int ithGene = chromosome.get(i);
-        final int jthGene = chromosome.get(j);
+        final int ithGene = chromosome.get(indices.getLeft());
+        final int jthGene = chromosome.get(indices.getRight());
 
-        chromosome.set(i, jthGene);
-        chromosome.set(j, ithGene);
+        chromosome.set(indices.getLeft(), jthGene);
+        chromosome.set(indices.getRight(), ithGene);
 
         return new MagicSquare(chromosome);
     }
