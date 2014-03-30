@@ -13,6 +13,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 public class MagicSquareSolver
         implements Solver<MagicSquare, GeneticAlgorithm<MagicSquare>> {
     public MagicSquareSolver() {}
@@ -22,6 +24,9 @@ public class MagicSquareSolver
             final GeneticAlgorithm<MagicSquare> algorithm,
             final int squareSize,
             final SolverConfiguration configuration) {
+        checkArgument(algorithm != null, "Illegal argument algorithm: null");
+        checkArgument(configuration != null, "Illegal argument configuration: null");
+
         final ArrayListMultimap<Integer, MagicSquare> population =
                 generateInitialPopulation(
                         algorithm,
@@ -31,21 +36,17 @@ public class MagicSquareSolver
 
         while (!isEvolutionFinished(configuration.maxGenerations(), t, population)) {
             final List<ImmutablePair<MagicSquare, MagicSquare>> parents =
-                    algorithm.selectParents(population);
+                    algorithm.selectParents(configuration.parentPoolSize(), population);
             final List<MagicSquare> children = new ArrayList<>();
 
-            if (RandomUtils.nextDouble(0, 1) < configuration.crossoverProbability()) {
-                for (final ImmutablePair<MagicSquare, MagicSquare> p : parents) {
-                    children.add(algorithm.crossover(p.getLeft(), p.getRight()));
-                }
-            }
-
-            if (RandomUtils.nextDouble(0, 1) < configuration.mutationProbability()) {
-                final int i = RandomUtils.nextInt(0, parents.size());
-                if (RandomUtils.nextDouble(0, 1) >= 0.5) {
-                    children.add(algorithm.mutate(parents.get(i).getLeft()));
-                } else {
-                    children.add(algorithm.mutate(parents.get(i).getRight()));
+            for (final ImmutablePair<MagicSquare, MagicSquare> p : parents) {
+                if (RandomUtils.nextDouble(0, 1) < configuration.crossoverProbability()) {
+                    final MagicSquare child = algorithm.crossover(p.getLeft(), p.getRight());
+                    if (RandomUtils.nextDouble(0, 1) < configuration.mutationProbability()) {
+                        children.add(algorithm.mutate(child));
+                    } else {
+                        children.add(child);
+                    }
                 }
             }
 
@@ -92,11 +93,17 @@ public class MagicSquareSolver
         return population.containsKey(0) || currentGeneration > maxGeneration;
     }
 
-    public static void main(String[] args) {
-        final SolverConfiguration sc = new SolverConfiguration(10000, 200, 0.9, 0.1);
-        final GeneticAlgorithm<MagicSquare> a = new MagicSquareGAOXCrossoverSwapMutationPanmixiaSelection();
+    public static void main(final String[] args) {
+        final SolverConfiguration sc = new SolverConfiguration.Builder()
+                .maxGenerations(1000)
+                .populationSize(1000)
+                .parentPoolSize(250)
+                .crossoverProbability(0.8)
+                .mutationProbability(0.4)
+                .build();
+        final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(50, 0.3);
         final MagicSquareSolver s = new MagicSquareSolver();
-        final MagicSquare r = s.solve(a, 3, sc);
+        final MagicSquare r = s.solve(a, 4, sc);
         System.out.println(a.fitnessOf(r));
         System.out.println(r);
     }

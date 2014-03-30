@@ -7,12 +7,12 @@ import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 
-public class MagicSquareGAOXCrossoverSwapMutationPanmixiaSelectionTest {
-    private MagicSquareGAOXCrossoverSwapMutationPanmixiaSelection algorithm;
+public class MagicSquareGATest {
+    private MagicSquareGA algorithm;
 
     @Before
     public void setup() {
-        algorithm = new MagicSquareGAOXCrossoverSwapMutationPanmixiaSelection();
+        algorithm = new MagicSquareGA(1, 0.1);
     }
 
     @Test
