@@ -126,22 +126,27 @@ public class MagicSquareGA
     }
 
     /**
-     * Tournament selection.
+     * Children is added to population and the tournament selection is used.
+     * Size of population is not changed.
      */
     @Override
-    public Multimap<Integer, MagicSquare> selectForRemoval(
-            final long n,
-            final Multimap<Integer, MagicSquare> population) {
-        checkArgument(
-                n <= population.size(),
-                "Can't remove more individuals than population contains.");
+    public Multimap<Integer, MagicSquare> nextGenerationFrom(
+            final Multimap<Integer, MagicSquare> population,
+            final Multimap<Integer, MagicSquare> children) {
         checkArgument(population != null, "Illegal argument population: null");
+        checkArgument(children != null, "Illegal argument population: null");
         checkArgument(
                 population.size() > 1,
                 "Population should contain more than one individual");
 
+        final Multimap<Integer, MagicSquare> tournament =
+                ArrayListMultimap.create(population);
+        for (final Map.Entry<Integer, MagicSquare> e : children.entries()) {
+            tournament.put(e.getKey(), e.getValue());
+        }
+
         final List<Map.Entry<Integer, MagicSquare>> entries =
-                new ArrayList<>(population.entries());
+                new ArrayList<>(tournament.entries());
         final Multimap<Integer, Map.Entry<Integer, MagicSquare>> tournamentRes =
                 ArrayListMultimap.create();
         for (Map.Entry<Integer, MagicSquare> e : entries) {
@@ -163,24 +168,23 @@ public class MagicSquareGA
 
         final List<Integer> winValues = new ArrayList<>(tournamentRes.keySet());
         Collections.sort(winValues);
-        final Multimap<Integer, MagicSquare> result = ArrayListMultimap.create();
 
-        while (result.size() != n && !winValues.isEmpty()) {
+        while (tournament.size() != population.size() && !winValues.isEmpty()) {
             final Stack<Map.Entry<Integer, MagicSquare>> candidates = new Stack<>();
             for (final Map.Entry<Integer, MagicSquare> ms :
                     tournamentRes.get(winValues.get(0))) {
                 candidates.push(ms);
             }
 
-            while (!candidates.isEmpty() && result.size() != n) {
+            while (!candidates.isEmpty() && tournament.size() != population.size()) {
                 final Map.Entry<Integer, MagicSquare> e = candidates.pop();
-                result.put(e.getKey(), e.getValue());
+                tournament.remove(e.getKey(), e.getValue());
             }
 
             winValues.remove(0);
         }
 
-        return result;
+        return tournament;
     }
 
     /**

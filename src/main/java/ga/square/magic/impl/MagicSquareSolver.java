@@ -11,7 +11,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -27,7 +26,7 @@ public class MagicSquareSolver
         checkArgument(algorithm != null, "Illegal argument algorithm: null");
         checkArgument(configuration != null, "Illegal argument configuration: null");
 
-        final ArrayListMultimap<Integer, MagicSquare> population =
+        Multimap<Integer, MagicSquare> population =
                 generateInitialPopulation(
                         algorithm,
                         squareSize,
@@ -37,29 +36,20 @@ public class MagicSquareSolver
         while (!isEvolutionFinished(configuration.maxGenerations(), t, population)) {
             final List<ImmutablePair<MagicSquare, MagicSquare>> parents =
                     algorithm.selectParents(configuration.parentPoolSize(), population);
-            final List<MagicSquare> children = new ArrayList<>();
+            final Multimap<Integer, MagicSquare> children =
+                    ArrayListMultimap.create();
 
             for (final ImmutablePair<MagicSquare, MagicSquare> p : parents) {
                 if (RandomUtils.nextDouble(0, 1) < configuration.crossoverProbability()) {
-                    final MagicSquare child = algorithm.crossover(p.getLeft(), p.getRight());
+                    MagicSquare child = algorithm.crossover(p.getLeft(), p.getRight());
                     if (RandomUtils.nextDouble(0, 1) < configuration.mutationProbability()) {
-                        children.add(algorithm.mutate(child));
-                    } else {
-                        children.add(child);
+                        child = algorithm.mutate(child);
                     }
+                    children.put(algorithm.fitnessOf(child), child);
                 }
             }
 
-            for (final MagicSquare ms : children) {
-                population.put(algorithm.fitnessOf(ms), ms);
-            }
-
-            final Multimap<Integer, MagicSquare> toRemove =
-                    algorithm.selectForRemoval(children.size(), population);
-
-            for (final Map.Entry<Integer, MagicSquare> e : toRemove.entries()) {
-                population.remove(e.getKey(), e.getValue());
-            }
+            population = algorithm.nextGenerationFrom(population, children);
 
             t += 1;
         }
@@ -67,7 +57,7 @@ public class MagicSquareSolver
         final List<Integer> fitness = new ArrayList<>(population.keySet());
         Collections.sort(fitness);
 
-        return population.get(fitness.get(0)).get(0);
+        return ArrayListMultimap.create(population).get(fitness.get(0)).get(0);
     }
 
     private ArrayListMultimap<Integer, MagicSquare> generateInitialPopulation(
