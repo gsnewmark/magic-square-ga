@@ -73,11 +73,11 @@ public class MagicSquareSolver
     private ArrayListMultimap<Integer, MagicSquare> generateInitialPopulation(
             final GeneticAlgorithm<MagicSquare> algorithm,
             final int squareSize,
-            final int populationSize) {
+            final long populationSize) {
         final ArrayListMultimap<Integer, MagicSquare> initial =
                 ArrayListMultimap.create();
 
-        for (int i = 0; i < populationSize; i++) {
+        for (long i = 0; i < populationSize; i++) {
             final MagicSquare square = algorithm.randomIndividual(squareSize);
             initial.put(algorithm.fitnessOf(square), square);
         }
@@ -86,8 +86,8 @@ public class MagicSquareSolver
     }
 
     private boolean isEvolutionFinished(
-            final int maxGeneration,
-            final int currentGeneration,
+            final long maxGeneration,
+            final long currentGeneration,
             final Multimap<Integer, MagicSquare> population) {
 
         return population.containsKey(0) || currentGeneration > maxGeneration;
@@ -103,7 +103,7 @@ public class MagicSquareSolver
                 .build();
         final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(50, 0.3);
         final MagicSquareSolver s = new MagicSquareSolver();
-        final MagicSquare r = s.solve(a, 4, sc);
+        final MagicSquare r = s.solve(a, 5, sc);
         System.out.println(a.fitnessOf(r));
         System.out.println(r);
     }

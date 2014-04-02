@@ -4,25 +4,25 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 public class SolverConfiguration {
     public static class Builder {
-        private int maxGenerations;
-        private int populationSize;
-        private int parentPoolSize;
+        private long maxGenerations;
+        private long populationSize;
+        private long parentPoolSize;
         private double crossoverProbability;
         private double mutationProbability;
 
         public Builder() {}
 
-        public Builder maxGenerations(final int maxGenerations) {
+        public Builder maxGenerations(final long maxGenerations) {
             this.maxGenerations = maxGenerations;
             return this;
         }
 
-        public Builder populationSize(final int populationSize) {
+        public Builder populationSize(final long populationSize) {
             this.populationSize = populationSize;
             return this;
         }
 
-        public Builder parentPoolSize(final int parentPoolSize) {
+        public Builder parentPoolSize(final long parentPoolSize) {
             this.parentPoolSize = parentPoolSize;
             return this;
         }
@@ -47,16 +47,16 @@ public class SolverConfiguration {
         }
     }
 
-    private final int maxGenerations;
-    private final int populationSize;
-    private final int parentPoolSize;
+    private final long maxGenerations;
+    private final long populationSize;
+    private final long parentPoolSize;
     private final double crossoverProbability;
     private final double mutationProbability;
 
     public SolverConfiguration(
-            final int maxGenerations,
-            final int populationSize,
-            final int parentPoolSize,
+            final long maxGenerations,
+            final long populationSize,
+            final long parentPoolSize,
             final double crossoverProbability,
             final double mutationProbability) {
         checkArgument(
@@ -69,15 +69,15 @@ public class SolverConfiguration {
         this.mutationProbability = mutationProbability;
     }
 
-    public int maxGenerations() {
+    public long maxGenerations() {
         return maxGenerations;
     }
 
-    public int populationSize() {
+    public long populationSize() {
         return populationSize;
     }
 
-    public int parentPoolSize() {
+    public long parentPoolSize() {
         return parentPoolSize;
     }
 

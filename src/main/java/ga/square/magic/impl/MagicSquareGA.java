@@ -76,7 +76,7 @@ public class MagicSquareGA
      */
     @Override
     public List<ImmutablePair<MagicSquare, MagicSquare>> selectParents(
-            final int n,
+            final long n,
             final Multimap<Integer, MagicSquare> population) {
         checkArgument(population != null, "Illegal argument population: null");
         checkArgument(
@@ -103,9 +103,9 @@ public class MagicSquareGA
         final List<ImmutablePair<MagicSquare, MagicSquare>> result =
                 new ArrayList<>();
 
-        final int constrainedSelectionN =
-                new Double((n / 2) * constrainedSelectionPart).intValue();
-        for (int i = 0; i < constrainedSelectionN; ++i) {
+        final long constrainedSelectionN =
+                new Double((n / 2) * constrainedSelectionPart).longValue();
+        for (long i = 0; i < constrainedSelectionN; ++i) {
             final Pair<Integer, Integer> indices =
                     randomDifferentIndices(possibleConstrainedParents.size());
             result.add(new ImmutablePair<>(
@@ -114,7 +114,7 @@ public class MagicSquareGA
         }
 
         final List<MagicSquare> possibleParents = new ArrayList<>(population.values());
-        for (int i = 0; i < n - constrainedSelectionN; ++i) {
+        for (long i = 0; i < n - constrainedSelectionN; ++i) {
             final Pair<Integer, Integer> indices =
                     randomDifferentIndices(possibleParents.size());
             result.add(new ImmutablePair<>(
@@ -130,7 +130,7 @@ public class MagicSquareGA
      */
     @Override
     public Multimap<Integer, MagicSquare> selectForRemoval(
-            final int n,
+            final long n,
             final Multimap<Integer, MagicSquare> population) {
         checkArgument(
                 n <= population.size(),
