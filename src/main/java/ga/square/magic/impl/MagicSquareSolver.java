@@ -19,7 +19,7 @@ public class MagicSquareSolver
     public MagicSquareSolver() {}
 
     @Override
-    public MagicSquare solve(
+    public SolverResult<MagicSquare> solve(
             final GeneticAlgorithm<MagicSquare> algorithm,
             final int squareSize,
             final SolverConfiguration configuration) {
@@ -31,9 +31,11 @@ public class MagicSquareSolver
                         algorithm,
                         squareSize,
                         configuration.populationSize());
-        int t = 1;
+        int t = 0;
 
         while (!isEvolutionFinished(configuration.maxGenerations(), t, population)) {
+            t += 1;
+
             final List<ImmutablePair<MagicSquare, MagicSquare>> parents =
                     algorithm.selectParents(configuration.parentPoolSize(), population);
             final Multimap<Integer, MagicSquare> children =
@@ -50,14 +52,14 @@ public class MagicSquareSolver
             }
 
             population = algorithm.nextGenerationFrom(population, children);
-
-            t += 1;
         }
 
         final List<Integer> fitness = new ArrayList<>(population.keySet());
         Collections.sort(fitness);
 
-        return ArrayListMultimap.create(population).get(fitness.get(0)).get(0);
+        return new SolverResult<>(
+                ArrayListMultimap.create(population).get(fitness.get(0)).get(0),
+                t);
     }
 
     private ArrayListMultimap<Integer, MagicSquare> generateInitialPopulation(
@@ -80,7 +82,7 @@ public class MagicSquareSolver
             final long currentGeneration,
             final Multimap<Integer, MagicSquare> population) {
 
-        return population.containsKey(0) || currentGeneration > maxGeneration;
+        return population.containsKey(0) || currentGeneration >= maxGeneration;
     }
 
     public static void main(final String[] args) {
@@ -93,8 +95,8 @@ public class MagicSquareSolver
                 .build();
         final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(50, 0.3);
         final MagicSquareSolver s = new MagicSquareSolver();
-        final MagicSquare r = s.solve(a, 5, sc);
-        System.out.println(a.fitnessOf(r));
+        final SolverResult<MagicSquare> r = s.solve(a, 5, sc);
+        System.out.println(a.fitnessOf(r.getResult()));
         System.out.println(r);
     }
 }
