@@ -8,7 +8,6 @@ public interface Solver<I extends Individual, GA extends GeneticAlgorithm<I>> {
         private long generation;
 
         public SolverResult(final I result, final long generation) {
-            checkArgument(result != null, "Illegal argument result: null");
             this.result = result;
             this.generation = generation;
         }
@@ -30,5 +29,5 @@ public interface Solver<I extends Individual, GA extends GeneticAlgorithm<I>> {
         }
     }
 
-    SolverResult<I> solve(GA algo, int squareSize, SolverConfiguration configuration);
+    SolverResult<I> solve();
 }

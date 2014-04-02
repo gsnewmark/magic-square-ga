@@ -60,8 +60,8 @@ public class SolverConfiguration {
             final double crossoverProbability,
             final double mutationProbability) {
         checkArgument(
-                populationSize >= parentPoolSize,
-                "Parent pool size couldn't be more than population size");
+                populationSize >= 0,
+                "Populations should contain some individuals");
         this.maxGenerations = maxGenerations;
         this.populationSize = populationSize;
         this.parentPoolSize = parentPoolSize;
