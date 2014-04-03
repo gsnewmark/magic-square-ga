@@ -2,43 +2,49 @@ package ga.square.magic.impl;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import ga.square.magic.CallableWithProgress;
 import ga.square.magic.GeneticAlgorithm;
 import ga.square.magic.Solver;
 import ga.square.magic.SolverConfiguration;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
 public class MagicSquareSolver
-        implements Solver<MagicSquare, GeneticAlgorithm<MagicSquare>>,
-        CallableWithProgress<Solver.SolverResult<MagicSquare>> {
+        extends SwingWorker<Solver.SolverResult<MagicSquare>, Solver.SolverResult<MagicSquare>>
+        implements Solver<MagicSquare, GeneticAlgorithm<MagicSquare>> {
     private final GeneticAlgorithm<MagicSquare> algorithm;
     private final int squareSize;
     private final SolverConfiguration configuration;
+    private final JTextArea resultText;
+    private final JLabel totalTimeLabel;
+    private long timeEllapsed;
 
     private SolverResult<MagicSquare> currentBestIndividual;
 
     public MagicSquareSolver(
             final GeneticAlgorithm<MagicSquare> algorithm,
             final int squareSize,
-            final SolverConfiguration configuration) {
+            final SolverConfiguration configuration,
+            final JTextArea resultText,
+            final JLabel totalTimeLabel) {
         checkArgument(algorithm != null, "Illegal argument algorithm: null");
         checkArgument(configuration != null, "Illegal argument configuration: null");
+        checkArgument(resultText != null, "Illegal argument resultText: null");
+        checkArgument(totalTimeLabel != null, "Illegal argument totalTimeLabel: null");
 
         this.algorithm = algorithm;
         this.squareSize = squareSize;
         this.configuration = configuration;
-        currentBestIndividual = null;
+        this.resultText = resultText;
+        this.totalTimeLabel = totalTimeLabel;
+        this.timeEllapsed = 0;
+        this.currentBestIndividual = null;
     }
 
     @Override
@@ -52,10 +58,19 @@ public class MagicSquareSolver
                         squareSize,
                         configuration.populationSize());
         long t = 0;
+        final long startTime = System.currentTimeMillis();
 
         while (!isEvolutionFinished(configuration.maxGenerations(), t, population)) {
             if (t % 100 == 0) {
-                currentBestIndividual = findBestIndividual(population, t);
+                final SolverResult<MagicSquare> newBestIndividual =
+                        findBestIndividual(population, t);
+                firePropertyChange(
+                        "currentBestIndividual",
+                        currentBestIndividual,
+                        newBestIndividual);
+                currentBestIndividual = newBestIndividual;
+                setProgress(
+                        new Double(100 * t / configuration.maxGenerations()).intValue());
             }
 
             t += 1;
@@ -78,7 +93,21 @@ public class MagicSquareSolver
             population = algorithm.nextGenerationFrom(population, children);
         }
 
+        timeEllapsed = System.currentTimeMillis() - startTime;
+
         return findBestIndividual(population, t);
+    }
+
+    @Override
+    protected void done() {
+        try {
+            setProgress(100);
+            resultText.setText(get().toString());
+            totalTimeLabel.setText(Double.toString(timeEllapsed / 1000));
+        } catch (Exception ignore) {
+
+        }
+        super.done();
     }
 
     private SolverResult<MagicSquare> findBestIndividual(
@@ -116,71 +145,7 @@ public class MagicSquareSolver
     }
 
     @Override
-    public SolverResult<MagicSquare> currentProgress() {
-        if (currentBestIndividual == null) {
-            return null;
-        }
-
-        return new SolverResult<>(
-                currentBestIndividual.getResult(),
-                currentBestIndividual.getGeneration());
-    }
-
-    @Override
-    public SolverResult<MagicSquare> call() throws Exception {
+    protected SolverResult<MagicSquare> doInBackground() throws Exception {
         return solve();
-    }
-
-    public static void main(final String[] args) {
-        final long maxGenerations = 1000;
-        final SolverConfiguration sc = new SolverConfiguration.Builder()
-                .maxGenerations(maxGenerations)
-                .populationSize(1000)
-                .parentPoolSize(250)
-                .crossoverProbability(0.8)
-                .mutationProbability(0.4)
-                .build();
-        final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(50, 0.3);
-        final MagicSquareSolver s = new MagicSquareSolver(a, 5, sc);
-
-        // Start algorithm in a separate thread in order to be able to receive
-        // info about algorithm's progress
-        final ExecutorService es = Executors.newSingleThreadExecutor();
-        final Future<SolverResult<MagicSquare>> asyncResult = es.submit(s);
-
-        // To stop execution of the algorithm before it finishes use
-        // asyncResult.cancel(true);
-
-        // Retrieving information about the current progress
-        // HACK polling is bad
-        while (!asyncResult.isDone()) {
-            final SolverResult<MagicSquare> cp = s.currentProgress();
-            if (cp != null) {
-                System.out.println(cp.getGeneration() + "/" + maxGenerations + ":");
-                System.out.println("Fitness: " + a.fitnessOf(cp.getResult()));
-                System.out.println(cp.getResult());
-            }
-            try {
-                Thread.sleep(300);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // Extracting final result from the future
-        SolverResult<MagicSquare> result = null;
-        try {
-            result = asyncResult.get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-
-        if (result != null) {
-            System.out.println("Final result:");
-            System.out.println("Fitness: " + a.fitnessOf(result.getResult()));
-            System.out.println(result);
-        }
     }
 }
