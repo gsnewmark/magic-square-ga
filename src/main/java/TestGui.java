@@ -18,21 +18,24 @@ import java.beans.PropertyChangeListener;
  * To change this template use File | Settings | File Templates.
  */
 public class TestGui {
-    private JPanel magicSquarePanel;
+    private JPanel MagicSquarePanel;
     private JButton RUNButton;
-    private JButton RESETButton;
-    private JTextArea textArea1;
+    private JButton STOPButton;
+    private JTextArea RESULTS;
     private JTextField InputGeneration;
     private JLabel Time;
     private JButton RUNDEFAULTButton;
     private JTextField InputPopultion;
     private JTextField InputPoolSize;
     private JProgressBar progressBar;
+    private JTextField InputSquareSize;
+    private JTextField InputCrossover;
+    private JTextField InputMutation;
+    private JButton RESETButton;
 
     private PropertyChangeListener propertyChangeListener;
 
     private MagicSquareSolver s;
-
 
     public TestGui() {
         propertyChangeListener = new PropertyChangeListener() {
@@ -40,8 +43,10 @@ public class TestGui {
                 if ("progress".equals(evt.getPropertyName())) {
                     progressBar.setValue((Integer)evt.getNewValue());
                 } else if ("currentBestIndividual".equals(evt.getPropertyName())) {
-                    textArea1.setText(evt.getNewValue().toString());
+                    RESULTS.setText(evt.getNewValue().toString());
                 }
+
+
             }
         };
 
@@ -51,16 +56,24 @@ public class TestGui {
 
                 final SolverConfiguration sc = new SolverConfiguration.Builder()
                         .maxGenerations(Integer.parseInt(InputGeneration.getText()))
-                        .populationSize(1000)
-                        .parentPoolSize(250)
-                        .crossoverProbability(0.8)
-                        .mutationProbability(0.4)
+                        .populationSize(Integer.parseInt(InputPopultion.getText()))
+                        .parentPoolSize(Integer.parseInt(InputPoolSize.getText()))
+                        .crossoverProbability(Double.parseDouble(InputCrossover.getText()))
+                        .mutationProbability(Double.parseDouble(InputMutation.getText()))
                         .build();
                 final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(50, 0.3);
-                s = new MagicSquareSolver(a, 6, sc, textArea1, Time);
+                s = new MagicSquareSolver(a, Integer.parseInt(InputSquareSize.getText()), sc, RESULTS, Time);
                 s.addPropertyChangeListener(propertyChangeListener);
 
                 s.execute();
+            }
+        });
+
+        STOPButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                s.cancel(true);
+                s.removePropertyChangeListener(propertyChangeListener);
             }
         });
 
@@ -68,8 +81,16 @@ public class TestGui {
         RESETButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                s.cancel(true);
-                s.removePropertyChangeListener(propertyChangeListener);
+                RESULTS.setText("");
+                progressBar.setValue(0);
+                InputGeneration.setText("1000");
+                InputCrossover.setText("0.8");
+                InputPopultion.setText("1000");
+                InputMutation.setText("0.4");
+                InputPoolSize.setText("250");
+                InputSquareSize.setText("5");
+                Time.setText("TIME");
+
             }
         });
         RUNDEFAULTButton.addActionListener(new ActionListener() {
@@ -84,7 +105,7 @@ public class TestGui {
                         .mutationProbability(0.4)
                         .build();
                 final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(50, 0.3);
-                s = new MagicSquareSolver(a, 4, sc, textArea1, Time);
+                s = new MagicSquareSolver(a, 5, sc, RESULTS, Time);
                 s.addPropertyChangeListener(propertyChangeListener);
 
                 s.execute();
@@ -95,10 +116,9 @@ public class TestGui {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("TestGui");
-        frame.setContentPane(new TestGui().magicSquarePanel);
+        frame.setContentPane(new TestGui().MagicSquarePanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
     }
-
 }
