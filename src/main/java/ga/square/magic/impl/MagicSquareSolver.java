@@ -35,8 +35,6 @@ public class MagicSquareSolver
             final JLabel totalTimeLabel) {
         checkArgument(algorithm != null, "Illegal argument algorithm: null");
         checkArgument(configuration != null, "Illegal argument configuration: null");
-        checkArgument(resultText != null, "Illegal argument resultText: null");
-        checkArgument(totalTimeLabel != null, "Illegal argument totalTimeLabel: null");
 
         this.algorithm = algorithm;
         this.squareSize = squareSize;
@@ -68,6 +66,9 @@ public class MagicSquareSolver
                         "currentBestIndividual",
                         currentBestIndividual,
                         newBestIndividual);
+                System.out.println(newBestIndividual.getGeneration() + " "
+                        + newBestIndividual.getFitness() + " "
+                        + newBestIndividual.getResult());
                 currentBestIndividual = newBestIndividual;
                 setProgress(
                         new Double(100 * t / configuration.maxGenerations()).intValue());
@@ -102,8 +103,12 @@ public class MagicSquareSolver
     protected void done() {
         try {
             setProgress(100);
-            resultText.setText(get().toString());
-            totalTimeLabel.setText(Double.toString(timeEllapsed / 1000));
+            if (resultText != null) {
+                resultText.setText(get().toString());
+            }
+            if (totalTimeLabel != null) {
+                totalTimeLabel.setText(Double.toString(timeEllapsed / 1000));
+            }
         } catch (Exception ignore) {
 
         }
@@ -118,6 +123,7 @@ public class MagicSquareSolver
 
         return new SolverResult<>(
                 ArrayListMultimap.create(population).get(fitness.get(0)).get(0),
+                fitness.get(0),
                 t);
     }
 
@@ -147,5 +153,26 @@ public class MagicSquareSolver
     @Override
     protected SolverResult<MagicSquare> doInBackground() throws Exception {
         return solve();
+    }
+
+    public static void main(final String[] args) {
+        final long maxGenerations = 500;
+        final SolverConfiguration sc = new SolverConfiguration.Builder()
+                .maxGenerations(maxGenerations)
+                .populationSize(500)
+                .parentPoolSize(1000)
+                .crossoverProbability(0.9)
+                .mutationProbability(0.2)
+                .build();
+        final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(50, 0.3);
+        final MagicSquareSolver s = new MagicSquareSolver(a, 4, sc, null, null);
+
+        SolverResult<MagicSquare> result = s.solve();
+
+        if (result != null) {
+            System.out.println("Final result:");
+            System.out.println("Fitness: " + a.fitnessOf(result.getResult()));
+            System.out.println(result);
+        }
     }
 }

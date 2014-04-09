@@ -67,12 +67,7 @@ public class MagicSquareGA
     }
 
     /**
-     * Part of individuals are selected randomly from population, other part is
-     * formed from individuals fitness of which are better than the average
-     * fitness of the population are selected to the parent's pool.
-     *
-     * Distribution between parts are contolled by the
-     * {@code constrainedSelectionPart} parameter.
+     * Combination of elite and roulette-wheel selection methods.
      */
     @Override
     public List<ImmutablePair<MagicSquare, MagicSquare>> selectParents(
@@ -83,51 +78,111 @@ public class MagicSquareGA
                 population.size() > 1,
                 "Population should contain more than one individual");
 
-        double averageFitness = 0;
-        for (Map.Entry<Integer, MagicSquare> e : population.entries()) {
-            averageFitness += e.getKey();
-        }
-        averageFitness /= population.values().size();
+        // TODO should be configurable
+        final double elitePercent = 0.1;
+        final int eliteQuantity = new Double(elitePercent * n).intValue();
+        final List<MagicSquare> parentPool = eliteSelection(eliteQuantity, population);
 
-        final List<MagicSquare> possibleConstrainedParents = new ArrayList<>();
-        for (Map.Entry<Integer, MagicSquare> e : population.entries()) {
-            if (e.getKey() <= averageFitness) {
-                possibleConstrainedParents.add(e.getValue());
-            }
-        }
-        // HACK
-        if (possibleConstrainedParents.size() < 2) {
-            possibleConstrainedParents.add(possibleConstrainedParents.get(0));
-        }
+        parentPool.addAll(rouletteWheelSelection(n - eliteQuantity, population));
 
         final List<ImmutablePair<MagicSquare, MagicSquare>> result =
                 new ArrayList<>();
 
-        final long constrainedSelectionN =
-                new Double((n / 2) * constrainedSelectionPart).longValue();
-        for (long i = 0; i < constrainedSelectionN; ++i) {
+        while (parentPool.size() > 1) {
             final Pair<Integer, Integer> indices =
-                    randomDifferentIndices(possibleConstrainedParents.size());
+                    randomDifferentIndices(parentPool.size());
+            final int first = indices.getLeft();
+            final int second = indices.getRight();
             result.add(new ImmutablePair<>(
-                    possibleConstrainedParents.get(indices.getLeft()),
-                    possibleConstrainedParents.get(indices.getRight())));
-        }
+                    parentPool.get(first), parentPool.get(second)));
 
-        final List<MagicSquare> possibleParents = new ArrayList<>(population.values());
-        for (long i = 0; i < n - constrainedSelectionN; ++i) {
-            final Pair<Integer, Integer> indices =
-                    randomDifferentIndices(possibleParents.size());
-            result.add(new ImmutablePair<>(
-                    possibleParents.get(indices.getLeft()),
-                    possibleParents.get(indices.getRight())));
+            if (first < second) {
+                parentPool.remove(first);
+                parentPool.remove(second - 1);
+            } else {
+                parentPool.remove(second);
+                parentPool.remove(first - 1);
+            }
         }
 
         return result;
     }
 
+    private List<MagicSquare> eliteSelection(
+            final long n,
+            final Multimap<Integer, MagicSquare> population) {
+        assert population != null;
+
+        final List<MagicSquare> parentPool = new ArrayList<>();
+
+        final List<Integer> fitnessValues = new ArrayList<>(population.keySet());
+        Collections.sort(fitnessValues);
+
+        while (parentPool.size() < n && fitnessValues.size() > 0) {
+            final int fitness = fitnessValues.remove(0);
+
+            for (final MagicSquare ms : population.get(fitness)) {
+                if (parentPool.size() < n) {
+                    parentPool.add(ms);
+                }
+            }
+        }
+
+        return parentPool;
+    }
+
+    private List<MagicSquare> rouletteWheelSelection(
+            final long n,
+            final Multimap<Integer, MagicSquare> population) {
+        assert population != null;
+
+        final List<MagicSquare> parentPool = new ArrayList<>();
+        final Random rnd = new Random();
+
+        double totalReverseFitness = 0;
+        final List<ImmutablePair<MagicSquare, Double>> populationWithReverseFitness =
+                new ArrayList<>();
+        for (final Map.Entry<Integer, MagicSquare> e : population.entries()) {
+            final double reverseFitness = 1.0 / e.getKey();
+            totalReverseFitness += reverseFitness;
+            populationWithReverseFitness.add(
+                    new ImmutablePair<>(e.getValue(), reverseFitness));
+        }
+        final List<ImmutablePair<MagicSquare, Double>> populationWithProbability =
+                new ArrayList<>();
+        for (final ImmutablePair<MagicSquare, Double> e : populationWithReverseFitness) {
+            populationWithProbability.add(
+                    new ImmutablePair<>(e.getLeft(), e.getRight() / totalReverseFitness));
+        }
+
+        while (parentPool.size() < n) {
+            parentPool.add(rouletteWheelSelectOne(rnd, populationWithProbability));
+        }
+
+        return parentPool;
+    }
+
+    private MagicSquare rouletteWheelSelectOne(
+            final Random rnd,
+            final List<ImmutablePair<MagicSquare, Double>> populationWithProb) {
+        assert populationWithProb.size() > 0;
+
+        MagicSquare selected = populationWithProb.get(0).getLeft();
+        double total = populationWithProb.get(0).getRight();
+
+        for(int i = 1; i < populationWithProb.size(); i++) {
+            final double normalizedFitness = populationWithProb.get(i).getRight();
+            total += normalizedFitness;
+            if (rnd.nextDouble() <= (normalizedFitness / total)) {
+                selected = populationWithProb.get(i).getLeft();
+            }
+        }
+
+        return selected;
+    }
+
     /**
-     * Children is added to population and the tournament selection is used.
-     * Size of population is not changed.
+     * Children is used as a next generation.
      */
     @Override
     public Multimap<Integer, MagicSquare> nextGenerationFrom(
@@ -139,52 +194,7 @@ public class MagicSquareGA
                 population.size() > 1,
                 "Population should contain more than one individual");
 
-        final Multimap<Integer, MagicSquare> tournament =
-                ArrayListMultimap.create(population);
-        for (final Map.Entry<Integer, MagicSquare> e : children.entries()) {
-            tournament.put(e.getKey(), e.getValue());
-        }
-
-        final List<Map.Entry<Integer, MagicSquare>> entries =
-                new ArrayList<>(tournament.entries());
-        final Multimap<Integer, Map.Entry<Integer, MagicSquare>> tournamentRes =
-                ArrayListMultimap.create();
-        for (Map.Entry<Integer, MagicSquare> e : entries) {
-            int games = 0;
-            int wins = 0;
-            while (games < T) {
-                final int rand = RandomUtils.nextInt(0, entries.size());
-                final Map.Entry<Integer, MagicSquare> entry = entries.get(rand);
-                if (entry.getValue() != e.getValue()) {
-                    games += 1;
-                    if (entry.getKey() > e.getKey()) {
-                        wins += 1;
-                    }
-                }
-            }
-
-            tournamentRes.put(wins, e);
-        }
-
-        final List<Integer> winValues = new ArrayList<>(tournamentRes.keySet());
-        Collections.sort(winValues);
-
-        while (tournament.size() != population.size() && !winValues.isEmpty()) {
-            final Stack<Map.Entry<Integer, MagicSquare>> candidates = new Stack<>();
-            for (final Map.Entry<Integer, MagicSquare> ms :
-                    tournamentRes.get(winValues.get(0))) {
-                candidates.push(ms);
-            }
-
-            while (!candidates.isEmpty() && tournament.size() != population.size()) {
-                final Map.Entry<Integer, MagicSquare> e = candidates.pop();
-                tournament.remove(e.getKey(), e.getValue());
-            }
-
-            winValues.remove(0);
-        }
-
-        return tournament;
+        return children;
     }
 
     /**

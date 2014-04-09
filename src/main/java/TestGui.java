@@ -84,9 +84,9 @@ public class TestGui {
                 RESULTS.setText("");
                 progressBar.setValue(0);
                 InputGeneration.setText("1000");
-                InputCrossover.setText("0.8");
+                InputCrossover.setText("0.9");
                 InputPopultion.setText("1000");
-                InputMutation.setText("0.4");
+                InputMutation.setText("0.2");
                 InputPoolSize.setText("250");
                 InputSquareSize.setText("5");
                 Time.setText("TIME");
@@ -101,8 +101,8 @@ public class TestGui {
                         .maxGenerations(1000)
                         .populationSize(1000)
                         .parentPoolSize(250)
-                        .crossoverProbability(0.8)
-                        .mutationProbability(0.4)
+                        .crossoverProbability(0.9)
+                        .mutationProbability(0.2)
                         .build();
                 final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(50, 0.3);
                 s = new MagicSquareSolver(a, 5, sc, RESULTS, Time);
