@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import ga.square.magic.GeneticAlgorithm;
 import ga.square.magic.Solver;
 import ga.square.magic.SolverConfiguration;
+import ga.square.magic.gui.SquarePanel;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -21,8 +22,6 @@ public class MagicSquareSolver
     private final GeneticAlgorithm<MagicSquare> algorithm;
     private final int squareSize;
     private final SolverConfiguration configuration;
-    private final JTextArea resultText;
-    private final JLabel totalTimeLabel;
     private long timeEllapsed;
 
     private SolverResult<MagicSquare> currentBestIndividual;
@@ -30,17 +29,13 @@ public class MagicSquareSolver
     public MagicSquareSolver(
             final GeneticAlgorithm<MagicSquare> algorithm,
             final int squareSize,
-            final SolverConfiguration configuration,
-            final JTextArea resultText,
-            final JLabel totalTimeLabel) {
+            final SolverConfiguration configuration) {
         checkArgument(algorithm != null, "Illegal argument algorithm: null");
         checkArgument(configuration != null, "Illegal argument configuration: null");
 
         this.algorithm = algorithm;
         this.squareSize = squareSize;
         this.configuration = configuration;
-        this.resultText = resultText;
-        this.totalTimeLabel = totalTimeLabel;
         this.timeEllapsed = 0;
         this.currentBestIndividual = null;
     }
@@ -100,12 +95,15 @@ public class MagicSquareSolver
     protected void done() {
         try {
             setProgress(100);
-            if (resultText != null) {
-                resultText.setText(get().toString());
-            }
-            if (totalTimeLabel != null) {
-                totalTimeLabel.setText(Double.toString(timeEllapsed / 1000));
-            }
+            final SolverResult<MagicSquare> r = get();
+            firePropertyChange(
+                    "currentBestIndividual",
+                    currentBestIndividual,
+                    r);
+            firePropertyChange(
+                    "totalTime",
+                    0,
+                    Double.toString(timeEllapsed / 1000.0));
         } catch (Exception ignore) {
 
         }
@@ -162,7 +160,7 @@ public class MagicSquareSolver
                 .mutationProbability(0.2)
                 .build();
         final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(50, 0.6);
-        final MagicSquareSolver s = new MagicSquareSolver(a, 5, sc, null, null);
+        final MagicSquareSolver s = new MagicSquareSolver(a, 5, sc);
 
         SolverResult<MagicSquare> result = s.solve();
 

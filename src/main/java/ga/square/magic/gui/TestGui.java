@@ -1,4 +1,7 @@
+package ga.square.magic.gui;
+
 import ga.square.magic.GeneticAlgorithm;
+import ga.square.magic.Solver;
 import ga.square.magic.SolverConfiguration;
 import ga.square.magic.impl.MagicSquare;
 import ga.square.magic.impl.MagicSquareGA;
@@ -21,7 +24,6 @@ public class TestGui {
     private JPanel MagicSquarePanel;
     private JButton RUNButton;
     private JButton STOPButton;
-    private JTextArea RESULTS;
     private JTextField InputGeneration;
     private JLabel Time;
     private JButton RUNDEFAULTButton;
@@ -32,6 +34,11 @@ public class TestGui {
     private JTextField InputCrossover;
     private JTextField InputMutation;
     private JButton RESETButton;
+    private JPanel squarePanelRef;
+    private JLabel currentGeneration;
+    private JLabel bestFitness;
+
+    private SquarePanel squarePanel;
 
     private PropertyChangeListener propertyChangeListener;
 
@@ -43,10 +50,19 @@ public class TestGui {
                 if ("progress".equals(evt.getPropertyName())) {
                     progressBar.setValue((Integer)evt.getNewValue());
                 } else if ("currentBestIndividual".equals(evt.getPropertyName())) {
-                    RESULTS.setText(evt.getNewValue().toString());
+                    if (evt.getNewValue() != null) {
+                        if (evt.getNewValue() instanceof Solver.SolverResult) {
+                            final Solver.SolverResult<MagicSquare> r =
+                                    (Solver.SolverResult<MagicSquare>) evt.getNewValue();
+
+                            squarePanel.updateMagicSquare(r.getResult());
+                            currentGeneration.setText(String.valueOf(r.getGeneration()));
+                            bestFitness.setText(String.valueOf(r.getFitness()));
+                        }
+                    }
+                } else if ("totalTime".equals(evt.getPropertyName())) {
+                    Time.setText(evt.getNewValue().toString());
                 }
-
-
             }
         };
 
@@ -62,7 +78,7 @@ public class TestGui {
                         .mutationProbability(Double.parseDouble(InputMutation.getText()))
                         .build();
                 final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(50, 0.3);
-                s = new MagicSquareSolver(a, Integer.parseInt(InputSquareSize.getText()), sc, RESULTS, Time);
+                s = new MagicSquareSolver(a, Integer.parseInt(InputSquareSize.getText()), sc);
                 s.addPropertyChangeListener(propertyChangeListener);
 
                 s.execute();
@@ -81,7 +97,9 @@ public class TestGui {
         RESETButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                RESULTS.setText("");
+                squarePanel.updateMagicSquare(null);
+                currentGeneration.setText("");
+                bestFitness.setText("");
                 progressBar.setValue(0);
                 InputGeneration.setText("800");
                 InputCrossover.setText("0.8");
@@ -105,13 +123,18 @@ public class TestGui {
                         .mutationProbability(0.3)
                         .build();
                 final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(50, 0.3);
-                s = new MagicSquareSolver(a, 5, sc, RESULTS, Time);
+                s = new MagicSquareSolver(a, 5, sc);
                 s.addPropertyChangeListener(propertyChangeListener);
 
                 s.execute();
             }
 
         });
+    }
+
+    private void createUIComponents() {
+        squarePanel = new SquarePanel();
+        squarePanelRef = squarePanel;
     }
 
     public static void main(String[] args) {

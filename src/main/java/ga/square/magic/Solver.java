@@ -1,7 +1,5 @@
 package ga.square.magic;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 public interface Solver<I extends Individual, GA extends GeneticAlgorithm<I>> {
     public static class SolverResult<I> {
         private I result;
