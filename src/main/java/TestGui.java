@@ -83,10 +83,10 @@ public class TestGui {
             public void actionPerformed(ActionEvent e) {
                 RESULTS.setText("");
                 progressBar.setValue(0);
-                InputGeneration.setText("1000");
+                InputGeneration.setText("800");
                 InputCrossover.setText("0.8");
                 InputPopultion.setText("1000");
-                InputMutation.setText("0.4");
+                InputMutation.setText("0.3");
                 InputPoolSize.setText("250");
                 InputSquareSize.setText("5");
                 Time.setText("TIME");
@@ -98,11 +98,11 @@ public class TestGui {
             public void actionPerformed(ActionEvent e) {
 
                 final SolverConfiguration sc = new SolverConfiguration.Builder()
-                        .maxGenerations(1000)
+                        .maxGenerations(800)
                         .populationSize(1000)
                         .parentPoolSize(250)
                         .crossoverProbability(0.8)
-                        .mutationProbability(0.4)
+                        .mutationProbability(0.3)
                         .build();
                 final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(50, 0.3);
                 s = new MagicSquareSolver(a, 5, sc, RESULTS, Time);

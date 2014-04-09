@@ -39,7 +39,7 @@
           </grid>
         </constraints>
         <properties>
-          <text value="1000"/>
+          <text value="800"/>
         </properties>
       </component>
       <component id="9ba2d" class="javax.swing.JLabel">
@@ -73,7 +73,7 @@
           </grid>
         </constraints>
         <properties>
-          <text value="250"/>
+          <text value="500"/>
         </properties>
       </component>
       <component id="35afb" class="javax.swing.JTextField" binding="InputPopultion">
@@ -186,7 +186,7 @@
           </grid>
         </constraints>
         <properties>
-          <text value="0.4"/>
+          <text value="0.3"/>
         </properties>
       </component>
       <component id="94620" class="javax.swing.JButton" binding="RESETButton" default-binding="true">

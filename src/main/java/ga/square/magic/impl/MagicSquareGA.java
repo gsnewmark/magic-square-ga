@@ -69,9 +69,9 @@ public class MagicSquareGA
     /**
      * Part of individuals are selected randomly from population, other part is
      * formed from individuals fitness of which are better than the average
-     * fitness of the population are selected to the parent's pool.
+     * fitness of the population.
      *
-     * Distribution between parts are contolled by the
+     * Distribution between parts are controlled by the
      * {@code constrainedSelectionPart} parameter.
      */
     @Override
@@ -104,7 +104,7 @@ public class MagicSquareGA
                 new ArrayList<>();
 
         final long constrainedSelectionN =
-                new Double((n / 2) * constrainedSelectionPart).longValue();
+                new Double(n  * constrainedSelectionPart).longValue();
         for (long i = 0; i < constrainedSelectionN; ++i) {
             final Pair<Integer, Integer> indices =
                     randomDifferentIndices(possibleConstrainedParents.size());
