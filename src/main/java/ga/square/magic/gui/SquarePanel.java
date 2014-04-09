@@ -4,6 +4,9 @@ import ga.square.magic.impl.MagicSquare;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Path2D;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SquarePanel extends JPanel {
     private MagicSquare magicSquare;
@@ -17,7 +20,6 @@ public class SquarePanel extends JPanel {
         if (magicSquare != null) {
             final int squareSize = magicSquare.getSquareSize();
             final Graphics2D g2d = (Graphics2D) g;
-            g2d.setColor(Color.black);
 
             final Dimension size = getSize();
             final Insets insets = getInsets();
@@ -28,14 +30,39 @@ public class SquarePanel extends JPanel {
             final int squareWidth = width / squareSize;
             final int squareHeight = height / squareSize;
 
+            g2d.setColor(Color.black);
+
+            final Map<Integer, Point> points = new HashMap<>();
+
             for (int i = 0; i < squareSize; ++i) {
                 for (int j = 0; j < squareSize; ++j) {
-                    final String s = String.valueOf(magicSquare.getCellValue(j, i));
+                    final int v = magicSquare.getCellValue(j, i);
                     final int x = j * squareWidth + squareWidth / 2;
                     final int y = i * squareHeight + squareHeight / 2;
-                    g2d.drawString(s, x, y);
+
+                    points.put(v, new Point(x, y));
+                    g2d.drawString(String.valueOf(v), x, y);
                     g2d.drawRect(j * squareWidth, i * squareHeight, squareWidth, squareHeight);
                 }
+            }
+
+            g2d.setColor(Color.blue);
+            g2d.setStroke(new BasicStroke(3));
+
+            for (int i = 1; i <= squareSize * squareSize; ++i) {
+                final Point start = points.get(i);
+                final Point end = (i == squareSize * squareSize)
+                        ? points.get(1) : points.get(i + 1);
+
+                final Path2D.Float curve = new Path2D.Float();
+                curve.moveTo(start.x, start.y);
+                final int xDiff = (end.x - start.x) / 4;
+                final int yDiff = (end.y - start.y) / 2;
+                curve.curveTo(
+                        start.x + xDiff, start.y + yDiff,
+                        end.x - xDiff, end.y - yDiff,
+                        end.x, end.y);
+                g2d.draw(curve);
             }
         }
     }
