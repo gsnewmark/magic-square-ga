@@ -30,8 +30,6 @@ public class SquarePanel extends JPanel {
             final int squareWidth = width / squareSize;
             final int squareHeight = height / squareSize;
 
-            g2d.setColor(Color.black);
-
             final Map<Integer, Point> points = new HashMap<>();
 
             for (int i = 0; i < squareSize; ++i) {
@@ -41,7 +39,11 @@ public class SquarePanel extends JPanel {
                     final int y = i * squareHeight + squareHeight / 2;
 
                     points.put(v, new Point(x, y));
+
+                    g2d.setColor(Color.red);
                     g2d.drawString(String.valueOf(v), x, y);
+
+                    g2d.setColor(Color.black);
                     g2d.drawRect(j * squareWidth, i * squareHeight, squareWidth, squareHeight);
                 }
             }
