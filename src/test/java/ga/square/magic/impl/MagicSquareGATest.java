@@ -12,7 +12,7 @@ public class MagicSquareGATest {
 
     @Before
     public void setup() {
-        algorithm = new MagicSquareGA(1, 0.1);
+        algorithm = new MagicSquareGA(1, 0.1, 1);
     }
 
     @Test

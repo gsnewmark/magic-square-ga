@@ -15,6 +15,7 @@ public class MagicSquareGA
         implements GeneticAlgorithm<MagicSquare> {
     private final int T;
     private final double constrainedSelectionPart;
+    private final double k;
 
     /**
      * @param T size of tournament
@@ -23,9 +24,11 @@ public class MagicSquareGA
      */
     public MagicSquareGA(
             final int T,
-            final double constrainedSelectionPart) {
+            final double constrainedSelectionPart,
+            final double k) {
         this.T = T;
         this.constrainedSelectionPart = constrainedSelectionPart;
+        this.k = k;
     }
 
     @Override
@@ -63,7 +66,31 @@ public class MagicSquareGA
         fitness += squaredDiff(magicSum, leftDiagonalSum(individual));
         fitness += squaredDiff(magicSum, rightDiagonalSum(individual));
 
+        fitness += asymmetricPenaltyOf(individual);
+
         return fitness;
+    }
+
+    private int asymmetricPenaltyOf(final MagicSquare individual) {
+        final int size = individual.getSquareSize();
+        final int border = size / 2;
+
+        int diff = 0;
+        for (int y = 0; y < border; ++y) {
+            for (int x = 0; x < border; ++x) {
+                final int leftDiff =
+                        squaredDiff(
+                                individual.getCellValue(x, y),
+                                individual.getCellValue(x, size - 1 - y));
+                final int rightDiff =
+                        squaredDiff(
+                                individual.getCellValue(size - 1 - x, y),
+                                individual.getCellValue(size - 1 - x, size - 1 - y));
+                diff += squaredDiff(leftDiff, rightDiff);
+            }
+        }
+
+        return new Double(diff * k).intValue();
     }
 
     /**

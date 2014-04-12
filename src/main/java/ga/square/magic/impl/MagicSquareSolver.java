@@ -159,7 +159,7 @@ public class MagicSquareSolver
                 .crossoverProbability(0.9)
                 .mutationProbability(0.2)
                 .build();
-        final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(50, 0.6);
+        final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(50, 0.6, 1);
         final MagicSquareSolver s = new MagicSquareSolver(a, 5, sc);
 
         SolverResult<MagicSquare> result = s.solve();

@@ -47,7 +47,7 @@ public class SquarePanel extends JPanel {
             }
 
             g2d.setColor(Color.blue);
-            g2d.setStroke(new BasicStroke(3));
+            g2d.setStroke(new BasicStroke(2));
 
             for (int i = 1; i <= squareSize * squareSize; ++i) {
                 final Point start = points.get(i);

@@ -77,7 +77,7 @@ public class TestGui {
                         .crossoverProbability(Double.parseDouble(InputCrossover.getText()))
                         .mutationProbability(Double.parseDouble(InputMutation.getText()))
                         .build();
-                final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(50, 0.3);
+                final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(50, 0.3, 1);
                 s = new MagicSquareSolver(a, Integer.parseInt(InputSquareSize.getText()), sc);
                 s.addPropertyChangeListener(propertyChangeListener);
 
@@ -122,7 +122,7 @@ public class TestGui {
                         .crossoverProbability(0.8)
                         .mutationProbability(0.3)
                         .build();
-                final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(50, 0.3);
+                final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(50, 0.3, 1);
                 s = new MagicSquareSolver(a, 5, sc);
                 s.addPropertyChangeListener(propertyChangeListener);
 
