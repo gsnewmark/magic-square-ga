@@ -6,7 +6,6 @@ public class SolverConfiguration {
     public static class Builder {
         private long maxGenerations;
         private long populationSize;
-        private long parentPoolSize;
         private double crossoverProbability;
         private double mutationProbability;
 
@@ -19,11 +18,6 @@ public class SolverConfiguration {
 
         public Builder populationSize(final long populationSize) {
             this.populationSize = populationSize;
-            return this;
-        }
-
-        public Builder parentPoolSize(final long parentPoolSize) {
-            this.parentPoolSize = parentPoolSize;
             return this;
         }
 
@@ -41,7 +35,6 @@ public class SolverConfiguration {
             return new SolverConfiguration(
                     maxGenerations,
                     populationSize,
-                    parentPoolSize,
                     crossoverProbability,
                     mutationProbability);
         }
@@ -49,14 +42,12 @@ public class SolverConfiguration {
 
     private final long maxGenerations;
     private final long populationSize;
-    private final long parentPoolSize;
     private final double crossoverProbability;
     private final double mutationProbability;
 
     public SolverConfiguration(
             final long maxGenerations,
             final long populationSize,
-            final long parentPoolSize,
             final double crossoverProbability,
             final double mutationProbability) {
         checkArgument(
@@ -64,7 +55,6 @@ public class SolverConfiguration {
                 "Populations should contain some individuals");
         this.maxGenerations = maxGenerations;
         this.populationSize = populationSize;
-        this.parentPoolSize = parentPoolSize;
         this.crossoverProbability = crossoverProbability;
         this.mutationProbability = mutationProbability;
     }
@@ -75,10 +65,6 @@ public class SolverConfiguration {
 
     public long populationSize() {
         return populationSize;
-    }
-
-    public long parentPoolSize() {
-        return parentPoolSize;
     }
 
     public double crossoverProbability() {

@@ -28,7 +28,6 @@ public class TestGui {
     private JLabel Time;
     private JButton RUNDEFAULTButton;
     private JTextField InputPopultion;
-    private JTextField InputPoolSize;
     private JProgressBar progressBar;
     private JTextField InputSquareSize;
     private JTextField InputCrossover;
@@ -37,6 +36,8 @@ public class TestGui {
     private JPanel squarePanelRef;
     private JLabel currentGeneration;
     private JLabel bestFitness;
+    private JTextField InputTournamentSize;
+    private JTextField InputSymmetryMultiplier;
 
     private SquarePanel squarePanel;
 
@@ -71,13 +72,14 @@ public class TestGui {
             public void actionPerformed(ActionEvent e) {
 
                 final SolverConfiguration sc = new SolverConfiguration.Builder()
-                        .maxGenerations(Integer.parseInt(InputGeneration.getText()))
-                        .populationSize(Integer.parseInt(InputPopultion.getText()))
-                        .parentPoolSize(Integer.parseInt(InputPoolSize.getText()))
+                        .maxGenerations(Long.parseLong(InputGeneration.getText()))
+                        .populationSize(Long.parseLong(InputPopultion.getText()))
                         .crossoverProbability(Double.parseDouble(InputCrossover.getText()))
                         .mutationProbability(Double.parseDouble(InputMutation.getText()))
                         .build();
-                final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(50, 0.3, 1);
+                final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(
+                        Integer.parseInt(InputTournamentSize.getText()),
+                        Double.parseDouble(InputSymmetryMultiplier.getText()));
                 s = new MagicSquareSolver(a, Integer.parseInt(InputSquareSize.getText()), sc);
                 s.addPropertyChangeListener(propertyChangeListener);
 
@@ -105,8 +107,9 @@ public class TestGui {
                 InputCrossover.setText("0.8");
                 InputPopultion.setText("1000");
                 InputMutation.setText("0.3");
-                InputPoolSize.setText("250");
                 InputSquareSize.setText("5");
+                InputTournamentSize.setText("50");
+                InputSymmetryMultiplier.setText("1.0");
                 Time.setText("TIME");
 
             }
@@ -118,11 +121,10 @@ public class TestGui {
                 final SolverConfiguration sc = new SolverConfiguration.Builder()
                         .maxGenerations(800)
                         .populationSize(1000)
-                        .parentPoolSize(250)
                         .crossoverProbability(0.8)
                         .mutationProbability(0.3)
                         .build();
-                final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(50, 0.3, 1);
+                final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(50, 1);
                 s = new MagicSquareSolver(a, 5, sc);
                 s.addPropertyChangeListener(propertyChangeListener);
 

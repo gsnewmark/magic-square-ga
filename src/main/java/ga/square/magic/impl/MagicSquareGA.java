@@ -14,7 +14,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 public class MagicSquareGA
         implements GeneticAlgorithm<MagicSquare> {
     private final int T;
-    private final double constrainedSelectionPart;
     private final double k;
 
     /**
@@ -24,10 +23,8 @@ public class MagicSquareGA
      */
     public MagicSquareGA(
             final int T,
-            final double constrainedSelectionPart,
             final double k) {
         this.T = T;
-        this.constrainedSelectionPart = constrainedSelectionPart;
         this.k = k;
     }
 
@@ -94,59 +91,30 @@ public class MagicSquareGA
     }
 
     /**
-     * Part of individuals are selected randomly from population, other part is
-     * formed from individuals fitness of which are better than the average
-     * fitness of the population.
-     *
-     * Distribution between parts are controlled by the
-     * {@code constrainedSelectionPart} parameter.
+     * Parent pairs are selected randomly.
      */
     @Override
     public List<ImmutablePair<MagicSquare, MagicSquare>> selectParents(
-            final long n,
             final Multimap<Integer, MagicSquare> population) {
         checkArgument(population != null, "Illegal argument population: null");
         checkArgument(
                 population.size() > 1,
                 "Population should contain more than one individual");
 
-        double averageFitness = 0;
-        for (Map.Entry<Integer, MagicSquare> e : population.entries()) {
-            averageFitness += e.getKey();
-        }
-        averageFitness /= population.values().size();
-
-        final List<MagicSquare> possibleConstrainedParents = new ArrayList<>();
-        for (Map.Entry<Integer, MagicSquare> e : population.entries()) {
-            if (e.getKey() <= averageFitness) {
-                possibleConstrainedParents.add(e.getValue());
-            }
-        }
-        // HACK
-        if (possibleConstrainedParents.size() < 2) {
-            possibleConstrainedParents.add(possibleConstrainedParents.get(0));
-        }
-
         final List<ImmutablePair<MagicSquare, MagicSquare>> result =
                 new ArrayList<>();
 
-        final long constrainedSelectionN =
-                new Double(n  * constrainedSelectionPart).longValue();
-        for (long i = 0; i < constrainedSelectionN; ++i) {
-            final Pair<Integer, Integer> indices =
-                    randomDifferentIndices(possibleConstrainedParents.size());
-            result.add(new ImmutablePair<>(
-                    possibleConstrainedParents.get(indices.getLeft()),
-                    possibleConstrainedParents.get(indices.getRight())));
-        }
-
         final List<MagicSquare> possibleParents = new ArrayList<>(population.values());
-        for (long i = 0; i < n - constrainedSelectionN; ++i) {
+
+        while (!possibleParents.isEmpty()) {
             final Pair<Integer, Integer> indices =
                     randomDifferentIndices(possibleParents.size());
+            final int father = indices.getLeft();
+            final int mother = indices.getRight();
+
             result.add(new ImmutablePair<>(
-                    possibleParents.get(indices.getLeft()),
-                    possibleParents.get(indices.getRight())));
+                    possibleParents.remove(father),
+                    possibleParents.remove((father < mother) ? mother - 1 : mother)));
         }
 
         return result;
@@ -233,9 +201,7 @@ public class MagicSquareGA
     }
 
     /**
-     * OX-crossover: choose a crossing point, take genes of first parent up to
-     * this point directly, then add missing genes from the second parent
-     * preserving the order they appear in it.
+     * PBX-crossover
      */
     @Override
     public MagicSquare crossover(
@@ -252,21 +218,37 @@ public class MagicSquareGA
                 new ArrayList<>(fatherChromosome.size());
 
         final Set<Integer> unusedGenes = new HashSet<>(fatherChromosome);
-        final int crossPoint =
-                RandomUtils.nextInt(1, fatherChromosome.size() - 1);
 
-        for (int i = 0; i < crossPoint; i++) {
-            childChromosome.add(fatherChromosome.get(i));
-            unusedGenes.remove(fatherChromosome.get(i));
+        final Set<Integer> positions = new HashSet<>();
+        final int positionsQuantity = RandomUtils.nextInt(1, fatherChromosome.size());
+        final List<Integer> unusedPositions = new ArrayList<>();
+        for (int i = 0; i < fatherChromosome.size(); i++) {
+            unusedPositions.add(i);
+        }
+        while (positions.size() != positionsQuantity && !unusedPositions.isEmpty()) {
+            positions.add(unusedPositions.remove(
+                    RandomUtils.nextInt(0, unusedPositions.size())));
+        }
+
+        final Map<Integer, Integer> child = new HashMap<>();
+
+        for (final Integer position : positions) {
+            final int gene = fatherChromosome.get(position);
+            unusedGenes.remove(gene);
+            child.put(position, gene);
         }
 
         for (final Integer gene : motherChromosome) {
-            if (unusedGenes.isEmpty()) {
+            if (unusedGenes.isEmpty() || unusedPositions.isEmpty()) {
                 break;
             } else if (unusedGenes.contains(gene)) {
-                childChromosome.add(gene);
+                child.put(unusedPositions.remove(0), gene);
                 unusedGenes.remove(gene);
             }
+        }
+
+        for (int i = 0; i < fatherChromosome.size(); i++) {
+            childChromosome.add(child.get(i));
         }
 
         return new MagicSquare(childChromosome);

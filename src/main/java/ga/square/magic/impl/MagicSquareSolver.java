@@ -69,7 +69,7 @@ public class MagicSquareSolver
             t += 1;
 
             final List<ImmutablePair<MagicSquare, MagicSquare>> parents =
-                    algorithm.selectParents(configuration.parentPoolSize(), population);
+                    algorithm.selectParents(population);
             final Multimap<Integer, MagicSquare> children =
                     ArrayListMultimap.create();
 
@@ -155,11 +155,10 @@ public class MagicSquareSolver
         final SolverConfiguration sc = new SolverConfiguration.Builder()
                 .maxGenerations(maxGenerations)
                 .populationSize(1000)
-                .parentPoolSize(250)
                 .crossoverProbability(0.9)
                 .mutationProbability(0.2)
                 .build();
-        final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(50, 0.6, 1);
+        final GeneticAlgorithm<MagicSquare> a = new MagicSquareGA(50, 1);
         final MagicSquareSolver s = new MagicSquareSolver(a, 5, sc);
 
         SolverResult<MagicSquare> result = s.solve();
