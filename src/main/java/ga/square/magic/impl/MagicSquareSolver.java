@@ -54,7 +54,7 @@ public class MagicSquareSolver
         final long startTime = System.currentTimeMillis();
 
         while (!isEvolutionFinished(configuration.maxGenerations(), t, population)) {
-            if (t % 100 == 0) {
+            if (t % configuration.getN() == 0) {
                 final SolverResult<MagicSquare> newBestIndividual =
                         findBestIndividual(population, t);
                 firePropertyChange(
@@ -119,7 +119,8 @@ public class MagicSquareSolver
         return new SolverResult<>(
                 ArrayListMultimap.create(population).get(fitness.get(0)).get(0),
                 fitness.get(0),
-                t);
+                t,
+                population);
     }
 
     private ArrayListMultimap<Integer, MagicSquare> generateInitialPopulation(
@@ -155,6 +156,7 @@ public class MagicSquareSolver
         final SolverConfiguration sc = new SolverConfiguration.Builder()
                 .maxGenerations(maxGenerations)
                 .populationSize(1000)
+                .N(100)
                 .crossoverProbability(0.9)
                 .mutationProbability(0.2)
                 .build();
