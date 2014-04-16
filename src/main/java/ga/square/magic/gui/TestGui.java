@@ -99,6 +99,7 @@ public class TestGui {
                     progressBar.setValue(0);
                     saveResultsButton.setEnabled(false);
                     RUNButton.setText("Stop");
+                    Time.setText("TIME");
                     resultsStats.delete(0, resultsStats.length());
                     final SolverConfiguration sc = new SolverConfiguration.Builder()
                             .maxGenerations(Long.parseLong(InputGeneration.getText()))
