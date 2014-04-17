@@ -131,12 +131,12 @@ public class TestGui {
                 currentGeneration.setText("");
                 bestFitness.setText("");
                 progressBar.setValue(0);
-                InputGeneration.setText("3000");
+                InputGeneration.setText("1000");
                 InputCrossover.setText("1.0");
                 InputPopultion.setText("2000");
                 InputN.setText("100");
-                InputMutation.setText("0.5");
-                InputSquareSize.setText("5");
+                InputMutation.setText("0.4");
+                InputSquareSize.setText("4");
                 InputTournamentSize.setText("50");
                 InputSymmetryMultiplier.setText("1.0");
                 Time.setText("TIME");

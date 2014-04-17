@@ -40,7 +40,7 @@ public class SquarePanel extends JPanel {
 
                     points.put(v, new Point(x, y));
 
-                    g2d.setColor(Color.red);
+                    g2d.setColor(Color.black);
                     g2d.drawString(String.valueOf(v), x, y);
 
                     g2d.setColor(Color.black);
@@ -48,7 +48,7 @@ public class SquarePanel extends JPanel {
                 }
             }
 
-            g2d.setColor(Color.blue);
+            g2d.setColor(Color.orange);
             g2d.setStroke(new BasicStroke(2));
 
             for (int i = 1; i <= squareSize * squareSize; ++i) {
