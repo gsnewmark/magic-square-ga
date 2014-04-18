@@ -18,8 +18,7 @@ public class MagicSquareGA
 
     /**
      * @param T size of tournament
-     * @param constrainedSelectionPart percentage of individuals chosen to the
-     *                                 parent pool using constrained selection
+     * @param k multiplier for symmetry fitness
      */
     public MagicSquareGA(
             final int T,
